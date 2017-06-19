@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.2.0/css/ol.css" type="text/css"></link>
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.2.0/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <form class="form-inline">
+    <div class="radio">
+    <label>
+    <input type="radio" name="interaction" value="draw" id="draw"/>
+    Draw &nbsp;
+    </label>
+    </div>
+    <div class="radio">
+    <label>
+    <input type="radio" name="interaction" value="modify" id="modify"/>
+    Modify &nbsp;
+    </label>
+    </div>
+    <div class="form-group">
+    <label>Geometry Type &nbsp;</label>
+    <select id="type">
+    <option value="Point">Point</option>
+    <option value="LineString">LineString</option>
+    <option value="Circle">Circle</option>
+    <option value="Polygon">Polygon</option>
+    <option value="None">None</option>
+    </select>
+    </div>
+    </form>
+    <input type="text" id="coordinates" style="width:100%; border-style:none;"/>
+    <script>
+      var raster = new ol.layer.Tile({
+          source: new ol.source.OSM()
+        });
+
+        var source = new ol.source.Vector({wrapX: false});
+
+        var vector = new ol.layer.Vector({
+          source: source
+        });
+
+        source.on('addfeature', function(evt){
+    	    var feature = evt.feature;
+    	    var coords = feature.getGeometry().getCoordinates();
+    	    console.log(coords);
+
+    	    document.getElementById("coordinates").value = coords;
+    	});
+        
+        var map = new ol.Map({
+          layers: [raster, vector],
+          target: 'map',
+          view: new ol.View({
+            center: [-11000000, 4600000],
+            zoom: 4
+          })
+        });
+
+        var typeSelect = document.getElementById('type');
+
+        var draw; // global so we can remove it later
+        function addInteraction() {
+          var value = typeSelect.value;
+          if (value !== 'None') {
+            draw = new ol.interaction.Draw({
+              source: source,
+              type: /** @type {ol.geom.GeometryType} */ (typeSelect.value)
+            });
+            map.addInteraction(draw);
+          }
+        }
+
+
+        /**
+         * Handle change event.
+         */
+        typeSelect.onchange = function() {
+          map.removeInteraction(draw);
+          addInteraction();
+        };
+
+        addInteraction();
+        
+        // GETTING COORDINATES
+        
+    </script>
+  </body>
+</html>
